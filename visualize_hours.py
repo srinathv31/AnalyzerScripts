@@ -24,15 +24,25 @@ for entry in data:
         sprints[sprint]['end'] = date
     
     for task in entry['tasks']:
-        person = task['person']
-        hours = task['hours']
+        # Split multiple persons but give each the full hours
+        persons = task['person'].split('/')
+        hours = task['hours']  # Each person gets full hours
         
-        if person not in hours_by_person:
-            hours_by_person[person] = {'dates': [], 'hours': [], 'sprints': []}
-        
-        hours_by_person[person]['dates'].append(date)
-        hours_by_person[person]['hours'].append(hours)
-        hours_by_person[person]['sprints'].append(sprint)
+        for person in persons:
+            person = person.strip()  # Remove any whitespace
+            if person not in hours_by_person:
+                hours_by_person[person] = {'dates': [], 'hours': [], 'sprints': []}
+            
+            # Check if we already have an entry for this date
+            try:
+                date_index = hours_by_person[person]['dates'].index(date)
+                # Add hours to existing entry
+                hours_by_person[person]['hours'][date_index] += hours
+            except ValueError:
+                # Add new entry
+                hours_by_person[person]['dates'].append(date)
+                hours_by_person[person]['hours'].append(hours)
+                hours_by_person[person]['sprints'].append(sprint)
 
 # Create the line chart
 fig = go.Figure()
